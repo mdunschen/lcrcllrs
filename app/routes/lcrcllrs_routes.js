@@ -22,16 +22,14 @@ module.exports = function(app, db) {
 	if (req.query.postcode) {
 		// https://api.postcodes.io/postcodes?q=L258RF
 		var url = 'https://api.postcodes.io/postcodes?q=' + req.query.postcode;
-		console.log(url);
 		request.get(url, [], function(err,res0,body){
-			  console.log(res.statusCode);
+			  console.log(res0.statusCode);
 			  if(err) {
 				  throw err;
 			  } //TODO: handle err
 			  if(res0.statusCode == 200 ){
 				  var r = JSON.parse(body);
-				  sqlQuery(res, r.result[0].admin_ward, r.result[0].admin_district);
-				  
+				  sqlQuery(res, r.result[0].admin_ward.replace("'", ""), r.result[0].admin_district);				  
 			  }
 		});
 	} else {
