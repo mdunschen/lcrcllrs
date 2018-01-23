@@ -1,11 +1,12 @@
 const express = require('express');
 const sqlite = require('sqlite3');
 const bodyParser = require('body-parser');
+var cors = require('cors')
 
 var db = new sqlite.Database("../KSITweeter/cllrs.db");
 
-const app = express();
-
+var app = express();
+app.use(cors());
 
 const port = 8000;
 
