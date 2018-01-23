@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Search your Councillors</title>
+</head>
+<body>
+<p>Enter postcode: <input id="postcode" type="edit" ></input>
+<p><input type="button" value="Go" onClick="submit();"></input>
+
+<div id="result"></div>
+
+<script>
+function submit() {
+	console.log("Hello");
+	var postcode = document.getElementById("postcode").value;
+	console.log(postcode);
+	
+	if (postcode) {
+		xmlhttp = new XMLHttpRequest();
+		if ("withCredentials" in xmlhttp) {
+			console.log("yes, we've got it.");
+		} else {
+			console.log("no credentials...");
+		}
+		xmlhttp.onload = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				myObj = JSON.parse(this.responseText);
+				var res = "<table>";
+				for (var i = 0; i < myObj.length; ++i) {
+					var c = myObj[i];
+					console.log(c);
+					res += ("<tr><td>" + c.cllrName + "</td><td><a href=\"mailto:" + c.cllrEmail + "\">" + c.cllrEmail + "</a></td><td><a href=\"" + c.cllrTwitterURL + "\">" + c.cllrTwitter + "</a></td></tr>");
+				}
+				res += "</table>";
+				
+				document.getElementById("result").innerHTML = res;
+			}
+		}
+		xmlhttp.open("GET", "http://localhost:8000/lcrcllrs?postcode=" + postcode, true);
+		xmlhttp.send();
+	}
+}
+</script>
+</body>
+</html>
