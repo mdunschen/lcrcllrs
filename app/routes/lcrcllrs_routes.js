@@ -1,9 +1,10 @@
 var request=require('request');
 
 module.exports = function(app, db) {
-  app.get('/lcrcllrs', function(req, res) {
+  app.post('/lcrcllrs', function(req, res) {
 	  console.log("database = " + db);
-	  console.log(req.query);
+	  console.log("req = " + req);
+	  console.log("req.body.postcode = " + req.body.postcode);
 	  
 	function sqlQuery(res, wardName, district) {
 	  console.log("before query, wardName = " + wardName)
@@ -19,10 +20,11 @@ module.exports = function(app, db) {
 		});
 	};
 	
-	if (req.query.postcode) {
+	if (req.body.postcode) {
 		// https://api.postcodes.io/postcodes?q=L258RF
-		var url = 'https://api.postcodes.io/postcodes?q=' + req.query.postcode;
-		request.get(url, [], function(err,res0,body){
+		var url = 'https://api.postcodes.io/postcodes?q=' + encodeURI(req.body.postcode.replace(/\"/g, ""));
+		console.log(url);
+		request.get(url, [], function(err, res0, body){
 			  console.log(res0.statusCode);
 			  if(err) {
 				  throw err;
@@ -33,8 +35,44 @@ module.exports = function(app, db) {
 			  }
 		});
 	} else {
-	      sqlQuery(res, req.query.wardName, req.query.district);
+	      sqlQuery(res, req.body.wardName, req.body.district);
 	}
 
 	});
+
+  app.post('/editcllrs', function(req, res) {
+	  console.log("database = " + db);
+	  console.log("req = " + req);
+	  console.log("req.body.id = " + req.body.id);
+	  console.log("req.body.cllrName = " + req.body.cllrName);
+	  console.log("req.body.cllrTwitterURL = " + req.body.cllrTwitterURL);
+	  if (!req.body.id) {
+		  // send all entries
+		  var councillors = db.all("SELECT * FROM cllrs", [], function(err, rows) {
+			if (err) {
+				throw err;
+			}
+			res.send(rows);
+	 
+		});
+	  }
+	  else {
+		  console.log("wants to edit id = " + req.body.id  + ", url = " + req.body.cllrTwitterURL + ", twitterName" + req.body.cllrTwitter);
+		  
+		  db.run("UPDATE cllrs SET cllrTwitterURL = ?, cllrTwitter = ? WHERE id = ?", [req.body.cllrTwitterURL.replace(/\"/g, ""), req.body.cllrTwitter.replace(/\"/g, ""), req.body.id], function(err) {
+			  if (err) {
+				  throw err;
+			  }
+			  console.log("Success.");
+			  db.all("SELECT * FROM cllrs", [], function(err, rows) {
+				if (err) {
+					throw err;
+				}
+				res.send(rows);
+				  
+			  });
+		  });
+	  }
+	});
+
 };

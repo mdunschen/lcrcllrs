@@ -29,8 +29,12 @@ function submit() {
 				document.getElementById("result").innerHTML = res;
 			}
 		}
-		xmlhttp.open("GET", "http://martind.vs.mythic-beasts.com:8000/lcrcllrs?postcode=" + postcode, true);
-		xmlhttp.send();
+		//xmlhttp.open("POST", "http://martind.vs.mythic-beasts.com:8000/lcrcllrs?postcode=" + postcode, true);
+		//xmlhttp.open("POST", "http://martind.vs.mythic-beasts.com:8000/lcrcllrs", true);
+		xmlhttp.open("POST", "http://localhost:8000/lcrcllrs", true);
+		xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xmlhttp.send("postcode=" + JSON.stringify(postcode));
+		//xmlhttp.send();
 	}
 }
 </script>

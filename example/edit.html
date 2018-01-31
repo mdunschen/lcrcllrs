@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Edit Councillor Table</title>
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {background-color: #f2f2f2;}
+</style>
+<script>
+
+function submitEdit(id) {
+	var row = document.getElementById(id);
+	console.log("submitEdit: " + row);
+	row.setAttribute("onClick", "editCllr(" + id + ");"); // enable events for this row again
+	
+	// get the new twitter link
+	var cell = row.cells[row.cells.length  - 1];
+	console.log("cell = ", cell);
+	var newTwitterURL = cell.children[0].value;
+	console.log("newTwitterURL = " + newTwitterURL);
+	var newTwitterName = "";
+	if (newTwitterURL.length > 0) {
+		newTwitterName += "@" + newTwitterURL.substring(newTwitterURL.lastIndexOf('/') + 1, newTwitterURL.length);
+	}
+	
+	loadCllrs(id, newTwitterURL, newTwitterName);
+}
+
+function editCllr(id) {
+	console.log("Edit: id = " + id);
+	var row = document.getElementById(id);
+	row.setAttribute("onClick", ""); // disable any event handling for this row
+	
+	var cell = row.cells[row.cells.length - 1]; // last cell is twitter link
+
+	// turn into edit
+	var editbox = document.createElement("INPUT");
+	editbox.setAttribute("type", "text");
+	if (cell.children.length > 0) {
+		var anchor = cell.children[0];
+		editbox.setAttribute("value", anchor.href);
+		cell.insertBefore(editbox, anchor);
+		cell.removeChild(anchor);
+	} else {
+		cell.appendChild(editbox);
+	}
+	editbox.setAttribute("onkeyup", "var keyup = event.which || event.keyCode; if (keyup == 13) { submitEdit(" + id + ");}")	
+}
+
+function loadCllrs(id, twitterURL, twitterName) {
+	xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			myObj = JSON.parse(this.responseText);
+			var res = "<table>";
+			for (var i = 0; i < myObj.length; ++i) {
+				var c = myObj[i];
+				var tr = "<tr id=\""+ c.id +"\" onclick=\"editCllr(" + c.id + ");\"><td>" + c.city + "</td><td>" + c.wardName + "</td>";
+				tr += ("<td>" + c.cllrName + "</td><td><a href=\"mailto:" + c.cllrEmail + "\">" + c.cllrEmail + "</a></td>");
+				if (c.cllrTwitterURL.length > 0) {
+					tr += ("<td><a href=\"" + c.cllrTwitterURL + "\">" + c.cllrTwitter + "</a></td></tr>");
+				}
+				else {
+					tr += ("<td></td><td></td>");
+				}
+				res += tr;
+			}
+			res += "</table>";
+			
+			document.getElementById("result").innerHTML = res;
+		}
+	}
+	xmlhttp.open("POST", "http://localhost:8000/editcllrs", true);
+	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	if (id == -1) {
+		xmlhttp.send();
+	} else {
+		xmlhttp.send("id=" + JSON.stringify(id) + "&cllrTwitterURL=" + JSON.stringify(twitterURL)  + "&cllrTwitter=" + JSON.stringify(twitterName));
+	}
+}
+</script>
+</head>
+<body onLoad="loadCllrs(-1, '');">
+
+<div id="result"></div>
+
+</body>
+</html>
