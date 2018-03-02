@@ -25,6 +25,10 @@ module.exports = function(app, db) {
 		var url = 'https://api.postcodes.io/postcodes?q=' + encodeURI(req.body.postcode.replace(/\"/g, ""));
 		console.log(url);
 		request.get(url, [], function(err, res0, body){
+			  if(typeof(res0) === "undefined") {
+				  console.log("res0 is undefined: " + err);
+				  return;
+			  }
 			  console.log(res0.statusCode);
 			  if(err) {
 				  throw err;
